@@ -21,7 +21,7 @@ def generate_hash(password):
 
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://cvrsdb_owner:yW8bOPEI5Ckr@ep-yellow-scene-a5urfsdy.us-east-2.aws.neon.tech/cvrsdb?sslmode=require'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
