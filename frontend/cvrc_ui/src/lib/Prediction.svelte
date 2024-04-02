@@ -26,42 +26,7 @@
 
   let isLoading = false;
 
- /* async function predictCrop() {
-    isLoading = true;
-    const response = await fetch('http://localhost:8080/predict', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    });
-
-    const data = await response.json();
-    prediction.set(data.prediction);
-    prediction.subscribe((value) => {
-      results = value;
-      console.log(results);
-    });
-    console.log(results);
-
-    //const varietiesResponse = await fetch(`http://localhost:8080/varieties?cropname=${value}`);
-    const varietiesResponse = await fetch(`http://localhost:8080/varieties?cropname=${value}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const varietiesData = await varietiesResponse.json();
-    varieties.set(varietiesData);  
-
-    // Save form data to localStorage
-
-    localStorage.setItem('formData', JSON.stringify(formData));
-    isLoading = false;
-
-    // Navigate to the results page
-    goto('/results');
-  }  */ 
+  
 
   
 async function predictCrop() {
@@ -93,6 +58,7 @@ async function predictCrop() {
 
   // Save form data to localStorage
   //localStorage.setItem('formData', JSON.stringify(formData));
+  
 
   isLoading = false;
 

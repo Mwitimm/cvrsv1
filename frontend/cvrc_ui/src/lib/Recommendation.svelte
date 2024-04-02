@@ -2,6 +2,9 @@
   import { onMount } from 'svelte';
   import prediction from "$lib/Store.js";
   import varieties from "$lib/varieties.js"
+  import specific from "$lib/specific.js"
+  import { goto } from '$app/navigation';
+  
   import Test from "$lib/Test.svelte";
 
   let formData = {
@@ -32,98 +35,16 @@
     months = getUniqueMonths();
     altitudes = getUniqueAltitudes();
 
-    console.log(months)
-    console.log(altitudes)
 
 
-    test()
+
+
   
   
 
   });
-let testData = {
-  "rice": [ 
-    {
-      "cropname": "rice",
-      "durationtomaturitymonths": null,
-      "economicproductionlifeyears": null,
-      "maintainerseedlingsource": "KARI KARI-Kibos",
-      "optimalproductionaltitude": "ND",
-      "specialattributes": "ND",
-      "variety_id": 16,
-      "varietyname": "Basmati",
-      "yearofrelease": null,
-      "yieldpertreeperyear": null
-    },
-    {
-      "cropname": "rice",
-      "durationtomaturitymonths": null,
-      "economicproductionlifeyears": null,
-      "maintainerseedlingsource": "KARI KARI-Kibos",
-      "optimalproductionaltitude": "ND",
-      "specialattributes": "ND",
-      "variety_id": 17,
-      "varietyname": "Sindano",
-      "yearofrelease": null,
-      "yieldpertreeperyear": null
-    },
-    {
-      "cropname": "rice",
-      "durationtomaturitymonths": 3,
-      "economicproductionlifeyears": null,
-      "maintainerseedlingsource": "KARI KARI (Mwea & Kibos)",
-      "optimalproductionaltitude": "15-1700",
-      "specialattributes": "Aromatic, Blast tolerant, Long grains",
-      "variety_id": 18,
-      "varietyname": "NERICA 1",
-      "yearofrelease": 2009,
-      "yieldpertreeperyear": "2.5-5.5"
-    },
-    {
-      "cropname": "rice",
-      "durationtomaturitymonths": 3,
-      "economicproductionlifeyears": null,
-      "maintainerseedlingsource": "KARI KARI (Mwea & Kibos)",
-      "optimalproductionaltitude": "15-1700",
-      "specialattributes": "Blast tolerant, Long grains",
-      "variety_id": 19,
-      "varietyname": "NERICA 4",
-      "yearofrelease": 2009,
-      "yieldpertreeperyear": "3.2-6.5"
-    },
-    {
-      "cropname": "rice",
-      "durationtomaturitymonths": 4,
-      "economicproductionlifeyears": null,
-      "maintainerseedlingsource": "KARI KARI (Mwea & Kibos)",
-      "optimalproductionaltitude": "15-1700",
-      "specialattributes": "Early, Long grains\\nBlast tolerant",
-      "variety_id": 20,
-      "varietyname": "NERICA 10",
-      "yearofrelease": 2009,
-      "yieldpertreeperyear": "3.5-6.7"
-    },
-    {
-      "cropname": "rice",
-      "durationtomaturitymonths": 4,
-      "economicproductionlifeyears": null,
-      "maintainerseedlingsource": "KARI KARI (Mwea & Kibos)",
-      "optimalproductionaltitude": "15-1700",
-      "specialattributes": "High ratooning ability\\nLong grains\\nTolerant to blast & drought",
-      "variety_id": 21,
-      "varietyname": "NERICA 11",
-      "yearofrelease": 2009,
-      "yieldpertreeperyear": "3-5"
-    }
-    ]
-  }
 
-function test(){
-  console.log("Test Variable",predictedCrop)
-  console.log("real  data",returnedVarieties[predictedCrop])
-}
 
-//test()
 
 
 console.log(months)
@@ -166,7 +87,9 @@ console.log(months)
       },
     });
     const specificData = await specificVarieties.json();
+    specific.set(specificData)
     console.log(specificData)
+    goto("/dashboard")
   }
 </script>
 
