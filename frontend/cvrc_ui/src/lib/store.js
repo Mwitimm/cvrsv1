@@ -3,7 +3,7 @@ import { writable } from 'svelte/store';
 // Function to create a writable store with persistence
 /**
  * @param {string} key
- * @param {null} initialValue
+ * @param {object} initialValue
  */
 function persistentWritable(key, initialValue) {
   let initialValueToUse = initialValue;
@@ -25,8 +25,9 @@ function persistentWritable(key, initialValue) {
 }
 
 // Create a persistent store called "prediction"
-const prediction = persistentWritable('prediction', null);
+const prediction = persistentWritable('prediction', { prediction: null, compatibility: null });
 
 export default prediction;
+
 
 

@@ -3,6 +3,7 @@
   import prediction from '$lib/Store.js';
   import varieties from "$lib/varieties.js"
   import { goto } from '$app/navigation';
+  import Loading from "$lib/Loading.svelte"
 
   let formData = {
     N: '',
@@ -15,12 +16,7 @@
   };
 
   // Load form data from localStorage on component mount
-  onMount(() => {
-    const storedFormData = localStorage.getItem('formData');
-    if (storedFormData) {
-      formData = JSON.parse(storedFormData);
-    }
-  });
+ 
 
   let results = '';
 
@@ -42,7 +38,7 @@ async function predictCrop() {
 
   const data = await response.json();
   const value = data.prediction;
-  prediction.set(value);
+  prediction.set(data);
   results = value;
   console.log(results);
 
@@ -82,7 +78,8 @@ async function predictCrop() {
     <div class="form-container">
 
         {#if isLoading}
-      <div class="spinner"></div>
+        <Loading/>
+   
       {:else}
         <h1>Find the right crop</h1>
           <div class="form-group">
@@ -192,15 +189,16 @@ async function predictCrop() {
 
 
 <style>
-  body {
+  main {
     font-family: Arial, sans-serif;
     margin: 0;
-    padding: 0;
+    padding:5rem;
     background-color: #f4f4f4;
     display: flex;
     justify-content: center;
     align-items: center;
     height: auto;
+
   }
 
   .form-container {
@@ -263,24 +261,6 @@ async function predictCrop() {
     margin-top: 20px;
   }
 
-  .spinner {
-    border: 5px solid rgba(0, 0, 0, 0.1);
-    border-left-color: rgba(0, 0, 0, 0.5);
-    border-radius: 50%;
-    width: 500px;
-    height: 500px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto;
-  position: fixed;
   
-
-	background: url('images/yin-yen.gif')center ;
   
-  }
-
-  /*@keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }*/
 </style>

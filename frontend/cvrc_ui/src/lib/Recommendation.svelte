@@ -16,6 +16,7 @@
   let altitudes=[]
 
   let predictedCrop = '';
+  let compactibility = ''
   let returnedVarieties
   let uniqueMonths = [];
   let uniqueAltitudes = [];
@@ -23,8 +24,9 @@
 
   onMount(() => {
     prediction.subscribe(value => {
-      predictedCrop = value; 
-      console.log(predictedCrop);
+      predictedCrop = value.prediction; 
+      compactibility = value.compactibility
+      console.log(predictedCrop,"score is", compactibility);
     });
 
    varieties.subscribe(crops => {
@@ -55,28 +57,37 @@ console.log(months)
   }
 
   function getUniqueMonths() {
+    if (!returnedVarieties[predictedCrop] || returnedVarieties[predictedCrop].length === 0) {
+      return [];
+    }
+  
     const uniqueMonths = new Set();
+  
     returnedVarieties[predictedCrop].forEach(variety => {
       if (variety.durationtomaturitymonths !== null) {
         uniqueMonths.add(variety.durationtomaturitymonths);
       }
     });
-    console.log(uniqueMonths)
+  
+    console.log(uniqueMonths);
     return Array.from(uniqueMonths).sort((a, b) => a - b);
-    
   }
-
-
+  
   function getUniqueAltitudes() {
+    if (!returnedVarieties[predictedCrop] || returnedVarieties[predictedCrop].length === 0) {
+      return [];
+    }
+  
     const uniqueAltitudes = new Set();
+  
     returnedVarieties[predictedCrop].forEach(variety => {
       if (variety.optimalproductionaltitude !== null) {
         uniqueAltitudes.add(variety.optimalproductionaltitude);
       }
     });
-    console.log(uniqueAltitudes)
+  
+    console.log(uniqueAltitudes);
     return Array.from(uniqueAltitudes).sort((a, b) => a - b);
-    
   }
 
   async function predictCrop() {
@@ -100,6 +111,10 @@ console.log(months)
     <div class="prediction-section">
       <p class="prediction-text">We have reccommended:</p>
       <p class="prediction-result">{predictedCrop}</p>
+      <p class="prediction-text">
+           compactibility
+      </p>
+      <small class="prediction-result">{compactibility}</small>
     </div>
   {:else if isLoading}
     <div class="prediction-section">

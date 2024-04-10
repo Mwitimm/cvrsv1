@@ -20,6 +20,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"svelte-navigator": "^3.2.2"
+		"svelte-french-toast": "^1.2.0"
 	}
 }

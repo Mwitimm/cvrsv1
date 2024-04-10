@@ -2,6 +2,8 @@
     import { onMount } from 'svelte';
     import login from "$lib/login.js"
 
+
+
     let userInfo;
     let loginState
     const unsubscribe = login.subscribe(value => {
@@ -43,7 +45,7 @@
                     <a class="nav-link active" aria-current="page" href="/">Services</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="/">Dashboard</a>
+                    <a class="nav-link active" aria-current="page" href="/dashboard">Dashboard</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/values">Crops</a>
@@ -58,7 +60,7 @@
                 {userInfo.username}
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="#">Profile</a></li>
+                <li><a class="dropdown-item" href="/dashboard">Profile</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><button class="dropdown-item" on:click={logout}>Logout</button></li>
             </ul>

@@ -1,5 +1,8 @@
 <script>
   import { goto } from '$app/navigation';
+  import toast, { Toaster } from 'svelte-french-toast';
+
+  import Loading from "$lib/Loading.svelte"
 
   let firstName = '';
   let lastName = '';
@@ -42,11 +45,24 @@
         throw new Error('Network response was not ok');
       }
       console.log('Signup successful');
+  toast.success(
+	"Account creation successful\nLogin to continue.",
+	{
+		duration: 2000,
+	}
+);
       goto("/login");
     })
     .catch(error => {
+      
       console.error('There was a problem with the signup request:', error);
-      alert('Signup failed. Please try again later.');
+      toast.error(" There was a problem with the signup request \n Check your username or email and try again",
+      {
+        duration:4000
+      }
+      
+      )
+    
     })
     .finally(() => {
       // Set isLoading to false when the request completes (whether success or failure)
@@ -230,9 +246,7 @@
 
   {#if isLoading}
 
-   <div class="loader-container">
-    <div class="loader"></div>
-  </div>
+ <Loading/>
   
   {:else}
   <form on:submit|preventDefault={handleSubmit}>
@@ -310,13 +324,16 @@
   
       <button type="submit" class="btn btn-primary">Sign Up</button>
     </form>
+  
+
+  {/if}
+
     <div class="login">
       <h1>Or</h1>
       <p>Already have an account?</p>
       <a href="/login">Login</a>
     </div>
 
-  {/if}
-
+<Toaster />
     
   </div>

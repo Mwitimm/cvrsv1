@@ -1,10 +1,19 @@
 <script>
   import { goto } from '$app/navigation';
   import login from "$lib/login.js"
+  import Loading from "$lib/Loading.svelte"
+  
+  import toast, { Toaster } from 'svelte-french-toast';
+
+
+
 
   let email = '';
   let password = '';
   let isLoading = false;
+
+
+
 
   function handleSubmit() {
     isLoading = true;
@@ -13,6 +22,8 @@
       email: email,
       password: password
     };
+
+    
 
     fetch('http://localhost:8080/login', {
       method: 'POST',
@@ -28,15 +39,28 @@
       return response.json();
     })
     .then(data => {
+
       console.log('Login successful:', data);
       login.set({ isLoggedIn: true, userInfo: data });
       isLoading = false;
-      goto("/");
+
+      toast.success("Login successful");
+      setTimeout(() => {
+  
+        goto("/");
+      }, 1000);
+     
+    
     })
     .catch(error => {
       console.error('There was a problem with the login:', error);
       isLoading = false;
-      alert('Login failed. Please try again later.');
+      toast.error("Check your password or email and try again",
+      {
+        duration:4000
+      }
+      
+      )
     });
   }
 </script>
@@ -138,76 +162,18 @@
       color: #558b2f;
     }
 
-    .loader-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-    }
-  
-    .loader {
-      width: 40px;
-      height: 20px;
-      --c: no-repeat radial-gradient(farthest-side, #000 93%, #0000);
-      background: var(--c) 0 0, var(--c) 50% 0, var(--c) 100% 0;
-      background-size: 8px 8px;
-      position: relative;
-      animation: l4-0 1s linear infinite alternate;
-    }
-  
-    .loader:before {
-      content: "";
-      position: absolute;
-      width: 8px;
-      height: 12px;
-      background: #000;
-      left: 0;
-      top: 0;
-      animation: l4-1 1s linear infinite alternate, l4-2 0.5s cubic-bezier(0, 200, .8, 200) infinite;
-    }
-  
-    @keyframes l4-0 {
-      0% {
-        background-position: 0 100%, 50% 0, 100% 0;
-      }
-  
-      8%, 42% {
-        background-position: 0 0, 50% 0, 100% 0;
-      }
-  
-      50% {
-        background-position: 0 0, 50% 100%, 100% 0;
-      }
-  
-      58%, 92% {
-        background-position: 0 0, 50% 0, 100% 0;
-      }
-  
-      100% {
-        background-position: 0 0, 50% 0, 100% 100%;
-      }
-    }
-  
-    @keyframes l4-1 {
-      100% {
-        left: calc(100% - 8px);
-      }
-    }
-  
-    @keyframes l4-2 {
-      100% {
-        top: -0.1px;
-      }
-    }
+    
 </style>
+
+
+
+
 
 <div class="container agricultural-theme">
   <h2>Login</h2>
   <!-- Add a conditional rendering for the loader -->
   {#if isLoading}
-    <div class="loader-container">
-      <div class="loader"></div>
-    </div>
+  <Loading/>
   {:else}
     <form on:submit|preventDefault={handleSubmit}>
       <div class="form-group">
@@ -236,11 +202,12 @@
 
       <button type="submit" class="btn btn-primary">Login</button>
     </form>
-
-  <div class="signup">
+  {/if}
+   <div class="signup">
     <p>Don't have an account?</p>
     <a href="/signup">Sign Up</a>
   </div>
-  {/if}
-
+<Toaster/>
 </div>
+
+

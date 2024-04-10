@@ -10,6 +10,8 @@
       prediction.subscribe(value => {
         predictedCrop = value;
       });
+
+    
   
       specific.subscribe(crops => {
         specificVarieties = Array.from(crops).sort((a, b) => {
@@ -19,6 +21,15 @@
         });
       });
     });
+
+    function handleFeedbackClick(variety) {
+      // console.log(`Feedback button clicked for variety: ${variety.cropname}`);
+      alert("cliked")
+     }
+
+     function Feedback(variety){
+       console.log("The seleted variety",variety)
+     }
   
     function handleNull(value) {
       return value === null ? 'N/A' : value;
@@ -37,10 +48,13 @@
         <p>Special Attributes: {handleNull(variety.specialattributes)}</p>
         <p>Year of Release: {handleNull(variety.yearofrelease)}</p>
         <p>Yield per Tree per Year: {handleNull(variety.yieldpertreeperyear)}</p>
+        <button on:click={() => Feedback(variety)}>
+        Give Feedback
+      </button>
       </div>
     {/each}
   {:else}
-    <p>No data available for {predictedCrop}</p>
+    <h2>No data available for {predictedCrop}</h2>
   {/if}
   
   <style>
@@ -60,6 +74,8 @@
 
   h2 {
     /*font-family: 'Brush Script MT', cursive;*/
+    padding-top:25px;
+    margin-top:10px;
     color: #008000; /* Dark green color */
     text-align: center;
   }

@@ -3,9 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash,check_password_hash
 from sqlalchemy.orm.exc import NoResultFound
 from flask_cors import CORS
-from sqlalchemy import text
+from sqlalchemy import text,MetaData
 from joblib import load
-
+import numpy as np
+from datetime import datetime, timezone
 
 
 
@@ -14,6 +15,8 @@ CORS(app)
 
 model = load("random_forest_model.joblib")
 
+stacked_model = load("stacking_classifier_model.joblib")
+
 def generate_hash(password):
     return generate_password_hash(str(password))
 
@@ -21,8 +24,19 @@ def generate_hash(password):
 
 
 # Database configuration
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://cvrsdb_owner:yW8bOPEI5Ckr@ep-yellow-scene-a5urfsdy.us-east-2.aws.neon.tech/cvrsdb?sslmode=require'
 
+#app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db_host = 'localhost'
+db_port = 8000
+db_name = 'cvrsdb'
+db_user = 'postgres'
+db_password = 'admin'
+
+# SQLAlchemy configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
 db = SQLAlchemy(app)
 
@@ -54,13 +68,45 @@ def loadHome():
 
 
 
-@app.route("/predict",methods=["POST"])
+"""@app.route("/predict",methods=["POST"])
 def predit():
     features = request.json
     
     values=list(features.values())
     predict = model.predict([values])
-    return jsonify({"prediction": predict[0]})
+    return jsonify({"prediction": predict[0]}) """
+
+
+
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    features = request.json
+
+    values = [float(value) for value in features.values()]
+
+    # Use the stacked model for prediction
+    prediction = stacked_model.predict([values]).tolist()
+
+    # Get the predicted crop label
+
+    # Get the probability of the predicted crop
+    probabilities = stacked_model.predict_proba([values])
+    
+    probabilities = stacked_model.predict_proba([values])
+    
+    # Convert probabilities array to a list
+    #probabilities_list = probabilities.tolist()
+    
+    max_probability_index = np.argmax(probabilities)
+    max_probability = probabilities[0][max_probability_index] * 10
+    
+ 
+
+    return jsonify({
+        "prediction": prediction[0],
+        "compactibility":max_probability
+    })
 
 
 @app.route('/users/add', methods=['POST'])
@@ -161,6 +207,8 @@ class Variety(db.Model):
 
 varieties_by_crop = {}
 
+
+"""
 @app.route('/varieties', methods=['GET'])
 def get_varieties():
     try:
@@ -179,6 +227,30 @@ def get_varieties():
     except Exception as e:
         print(str(e))
         return jsonify({"error": str(e)}), 500
+        
+"""  
+@app.route('/varieties', methods=['GET'])
+def get_varieties():
+    try:
+        cropname = request.args.get('cropname')
+        
+        if cropname:
+            varieties = Variety.query.filter_by(cropname=cropname).all()
+            if not varieties:
+                return jsonify({"error": f"No varieties found for crop '{cropname}'."}), 404
+        else:
+            return jsonify({"error": "Cropname parameter is missing."}), 400
+
+        for variety in varieties:
+            cropname = variety.cropname
+            if cropname not in varieties_by_crop:
+                varieties_by_crop[cropname] = []
+            varieties_by_crop[cropname].append(variety.to_dict())
+        return jsonify(varieties_by_crop)
+    except Exception as e:
+        print(str(e))
+        return jsonify({"error": str(e)}), 500
+
     
     
 def get_varieties_by_altitude_and_maturity(data, altitude_range, maturity_duration):
@@ -222,7 +294,179 @@ def get_specific_varieties():
         return jsonify({'message': 'No varieties found matching the specified criteria'}), 404
     
     return jsonify(matching_varieties)
+
+
+
+@app.route('/user/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    try:
+        user = User.query.filter_by(user_id=user_id).first()
+        if user:
+            user_data = {
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email
+            }
+            return jsonify(user_data), 200
+        else:
+            return jsonify({'error': 'User not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     
+    
+# Define the UserProfile model
+class UserProfile(db.Model):
+    __tablename__ = 'users'
+    __table_args__ = {'extend_existing': True}
+    user_id = db.Column(db.Integer, primary_key=True)
+    phone_number = db.Column(db.String(20))
+    language = db.Column(db.String(50))
+
+    def __init__(self, phone_number=None, language=None):
+        self.phone_number = phone_number
+        self.language = language
+
+
+@app.route('/updateuser/<int:user_id>', methods=['PUT'])
+def update_user_profile(user_id):
+    try:
+        user_profile = UserProfile.query.get(user_id)
+        if not user_profile:
+            return jsonify({'error': 'User profile not found'}), 404
+
+        data = request.json
+        if 'phone_number' in data:
+            user_profile.phone_number = str(data['phone_number'])
+        if 'language' in data:
+            user_profile.language = data['language']
+
+        db.session.commit()
+        return jsonify({'message': 'User profile updated successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+    
+    
+# Define the Farm model
+class Farm(db.Model):
+    __tablename__ = 'farms'
+    farm_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer)
+    farm_name = db.Column(db.String(255))
+    location = db.Column(db.String(255))
+    size = db.Column(db.String(255))
+    soil_type = db.Column(db.String(255))
+    climate_zone = db.Column(db.String(255))
+
+    def __init__(self, user_id, farm_name, location, size, soil_type, climate_zone):
+        self.user_id = user_id
+        self.farm_name = farm_name
+        self.location = location
+        self.size = size
+        self.soil_type = soil_type
+        self.climate_zone = climate_zone
+
+# API endpoint to insert data into the "farms" table
+@app.route('/farm', methods=['POST'])
+def insert_farm_data():
+    try:
+        data = request.json
+        new_farm = Farm(
+            user_id=data['user_id'],
+            farm_name=data['farm_name'],
+            location=data['location'],
+            size=data['size'],
+            soil_type=data['soil_type'],
+            climate_zone=data['climate_zone']
+        )
+        print(f"The Farm to be added is : {new_farm}")
+        db.session.add(new_farm)
+        db.session.commit()
+        return jsonify({'message': 'Farm data inserted successfully'}), 201
+    except KeyError as e:
+        return jsonify({'error': f'Missing required field: {e}'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+    
+    
+    
+# API endpoint to get farms belonging to a specific user
+@app.route('/farms/<int:user_id>', methods=['GET'])
+def get_user_farms(user_id):
+    try:
+        # Query the database to retrieve farms belonging to the specified user
+        user_farms = Farm.query.filter_by(user_id=user_id).all()
+
+        # If no farms are found for the user, return a 404 error
+        if not user_farms:
+            return jsonify({'error': 'No farms found for the user'}), 404
+
+        # Serialize the farms data
+        farms_data = []
+        for farm in user_farms:
+            farm_data = {
+                'farm_id': farm.farm_id,
+                'farm_name': farm.farm_name,
+                'location': farm.location,
+                'size': farm.size,
+                'soil_type': farm.soil_type,
+                'climate_zone': farm.climate_zone
+            }
+            farms_data.append(farm_data)
+
+        # Return the farms data as JSON
+        return jsonify({'farms': farms_data}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+    
+
+@app.route('/deletefarm/<int:farm_id>', methods=['DELETE'])
+def delete_farm(farm_id):
+    try:
+        farm = Farm.query.get(farm_id)
+        if farm:
+            db.session.delete(farm)
+            db.session.commit()
+            return jsonify({'message': 'Farm deleted successfully'}), 200
+        else:
+            return jsonify({'error': 'Farm not found'}), 404
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+    
+    
+    
+
+class Feedback(db.Model):
+    __tablename__ = 'feedback'
+    feedback_Id = db.Column(db.Integer, primary_key=True)
+    reccomenadtion_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer)
+    feedback_text = db.Column(db.Text)
+    feedback_date = db.Column(db.TIMESTAMP, default=lambda: datetime.now(timezone.utc))
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+@app.route('/feedback', methods=['POST'])
+def create_feedback():
+    data = request.json
+    # Remove feedback_date from the request data if present
+    data.pop('feedback_date', None)
+    
+    new_feedback = Feedback(**data)
+    try:
+        db.session.add(new_feedback)
+        db.session.commit()
+        return jsonify({'message': 'Feedback created successfully'}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
 
 
 if __name__ == "__main__":
