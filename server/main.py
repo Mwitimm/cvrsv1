@@ -68,13 +68,6 @@ def loadHome():
 
 
 
-"""@app.route("/predict",methods=["POST"])
-def predit():
-    features = request.json
-    
-    values=list(features.values())
-    predict = model.predict([values])
-    return jsonify({"prediction": predict[0]}) """
 
 
 
@@ -208,27 +201,7 @@ class Variety(db.Model):
 varieties_by_crop = {}
 
 
-"""
-@app.route('/varieties', methods=['GET'])
-def get_varieties():
-    try:
-        cropname = request.args.get('cropname')
-        
-        if cropname:
-            varieties = Variety.query.filter_by(cropname=cropname).all()
-        else:
-            return jsonify({"error": "Cropname parameter is missing."}), 400
-        for variety in varieties:
-            cropname = variety.cropname
-            if cropname not in varieties_by_crop:
-                varieties_by_crop[cropname] = []
-            varieties_by_crop[cropname].append(variety.to_dict())
-        return jsonify(varieties_by_crop)
-    except Exception as e:
-        print(str(e))
-        return jsonify({"error": str(e)}), 500
-        
-"""  
+
 @app.route('/varieties', methods=['GET'])
 def get_varieties():
     try:
@@ -380,7 +353,6 @@ def insert_farm_data():
             soil_type=data['soil_type'],
             climate_zone=data['climate_zone']
         )
-        print(f"The Farm to be added is : {new_farm}")
         db.session.add(new_farm)
         db.session.commit()
         return jsonify({'message': 'Farm data inserted successfully'}), 201
@@ -437,10 +409,9 @@ def delete_farm(farm_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
-    
-    
-    
-
+ 
+ 
+ 
 class Feedback(db.Model):
     __tablename__ = 'feedback'
     feedback_Id = db.Column(db.Integer, primary_key=True)
@@ -450,10 +421,20 @@ class Feedback(db.Model):
     feedback_date = db.Column(db.TIMESTAMP, default=lambda: datetime.now(timezone.utc))
 
     def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}   
+    
+    
 
-@app.route('/feedback', methods=['POST'])
+
+@app.route('/feedback', methods=['POST', 'OPTIONS'])
 def create_feedback():
+    if request.method == 'OPTIONS':
+        response = app.make_default_options_response()
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        response.headers['Access-Control-Allow-Methods'] = 'POST'
+        return response
+    
     data = request.json
     # Remove feedback_date from the request data if present
     data.pop('feedback_date', None)

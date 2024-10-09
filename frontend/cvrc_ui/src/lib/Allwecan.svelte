@@ -1,60 +1,56 @@
 <script>
-    import { onMount } from 'svelte';
-    import prediction from "$lib/Store.js";
-    import varieties from "$lib/varieties.js"
-
-    let predictedCrop = '';
-    let compactibility = '';
-    let returnedVarieties = [];
-    let isLoading = false;
-
-    onMount(() => {
-        prediction.subscribe(value => {
-            predictedCrop = value.prediction; 
-            compactibility = value.compactibility;
-            console.log(predictedCrop, "score is", compactibility);
-        });
-
-        varieties.subscribe(crops => {
-            returnedVarieties = crops; 
-            console.log(returnedVarieties);
-            console.log("size",returnedVarieties.length <= 0)
-        });
-    });
-</script>
-
-{#if returnedVarieties.length <= 0}
-    <div class="prediction-section">
-        <p class="prediction-text">We have recommended:</p>
-        <p class="prediction-result">{predictedCrop}</p>
-        <p class="prediction-text">Compactibility:</p>
-        <small class="prediction-result">{compactibility}</small>
-        <p class="prediction-text">That is all we can do for now</p>
-    </div>
-{:else}
-<p>That is all we can do</p>
-{/if}
-
-<style>
-    .prediction-section {
-        margin-bottom: 30px;
-        padding: 20px;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        text-align: center;
+    let showModal = false;
+  
+    function toggleModal() {
+      showModal = !showModal;
     }
-
-    .prediction-text {
-        font-size: 20px;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 10px;
+  </script>
+  
+  <main>
+    <button on:click={toggleModal}>Open Modal</button>
+  
+    {#if showModal}
+      <div class="modal">
+        <div class="modal-content">
+          <span class="close" on:click={toggleModal}>&times;</span>
+          <h2>Modal Title</h2>
+          <p>Modal content goes here...</p>
+        </div>
+      </div>
+    {/if}
+  </main>
+  
+  <style>
+    .modal {
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
     }
-
-    .prediction-result {
-        font-size: 18px;
-        color: #4d7c0f;
-        font-weight: bold;
+  
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 30%;
     }
-</style>
+  
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+  
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  </style>

@@ -4,11 +4,11 @@
       <div class="row">
         <div class="col-md-4 step">
           <h3>Tell us about your land</h3>
-          <p>Input details like soil type, average rainfall, and sunlight hours.</p>
+          <p>Input details like soil type, average rainfall etc.</p>
         </div>
         <div class="col-md-4 step">
           <h3>Specify your goals</h3>
-          <p>Indicate your desired yield, preferred crops (if any), and market access.</p>
+          <p>Indicate your desired duration to maturity,farm Altitude</p>
         </div>
         <div class="col-md-4 step">
           <h3>Get personalized recommendations</h3>

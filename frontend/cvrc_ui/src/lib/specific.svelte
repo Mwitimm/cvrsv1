@@ -2,9 +2,44 @@
     import { onMount } from 'svelte';
     import specific from "$lib/specific.js";
     import prediction from "$lib/Store.js";
+    import selectedFeedback from "$lib/feedback.js"
+    import { goto } from '$app/navigation';
   
     let predictedCrop = '';
     let specificVarieties = [];
+
+    let feedback = {
+      reccomenadtion_id: 0,
+      user_id: 0,
+      feedback_text: ''
+    };
+
+    async function createFeedback(feedback) {
+      try {
+        const res = await fetch("http://localhost:8080/feedback", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(feedback)
+        });
+    
+        if (!res.ok) {
+          throw new Error('Failed to create feedback');
+        }
+    
+        const data = await res.json();
+        
+        // Show alert if feedback is successfully created
+        alert('Feedback created successfully!');
+    
+        return data;
+      } catch (error) {
+        console.error('Error:', error);
+        return { error: error.message };
+      }
+    }
+
   
     onMount(() => {
       prediction.subscribe(value => {
@@ -25,16 +60,29 @@
     function handleFeedbackClick(variety) {
       // console.log(`Feedback button clicked for variety: ${variety.cropname}`);
       alert("cliked")
+
      }
 
      function Feedback(variety){
        console.log("The seleted variety",variety)
+       selectedFeedback.set(variety)
+       console.log(selectedFeedback)
+       goto("/feedback")
+
+
      }
   
     function handleNull(value) {
       return value === null ? 'N/A' : value;
     }
   </script>
+
+
+
+
+
+
+
   
   {#if specificVarieties.length > 0}
     {#each specificVarieties.slice(0, 3) as variety, index}
@@ -48,7 +96,7 @@
         <p>Special Attributes: {handleNull(variety.specialattributes)}</p>
         <p>Year of Release: {handleNull(variety.yearofrelease)}</p>
         <p>Yield per Tree per Year: {handleNull(variety.yieldpertreeperyear)}</p>
-        <button on:click={() => Feedback(variety)}>
+        <button  class="btn btn-primary" on:click={() => Feedback(variety)}>
         Give Feedback
       </button>
       </div>
